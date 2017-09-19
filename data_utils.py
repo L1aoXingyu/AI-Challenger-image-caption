@@ -30,6 +30,9 @@ class Vocabulary(object):
 
         self.idx = len(self.word2idx)
 
+    def __len__(self):
+        return len(self.word2idx) + 1
+
     def add_word(self, word):
         if word not in self.word2idx:
             self.word2idx[word] = self.idx
@@ -77,13 +80,14 @@ class MyDataset(data.Dataset):
         img = Image.open(img_path)
         img = self.transform(img)
 
-        cap = self.caption[index]['caption']  # 5 list
-        cap.sort(key=lambda x: len(x), reverse=True)
-        new_cap = []
-        for each in cap:
-            temp = [BOS] + self.vocab_dict.text_to_arr(each) + [EOS]
-            new_cap.append(temp)
-        return img, new_cap
+        cap = np.random.choice(self.caption[index]['caption'], 1)  # 5 list
+        # cap.sort(key=lambda x: len(x), reverse=True)
+        # new_cap = []
+        # for each in cap:
+        #     temp = [BOS] + self.vocab_dict.text_to_arr(each) + [EOS]
+        #     new_cap.append(temp)
+        cap = [BOS] + self.vocab_dict.text_to_arr(cap[0]) + [EOS]
+        return img, cap
 
     def __len__(self):
         return len(self.caption)
@@ -101,25 +105,37 @@ def img_transform(x):
 
 
 def collate_fn(batch):
+    batch.sort(key=lambda x: len(x[1]), reverse=True)
     img, label = zip(*batch)
-    seperate_label = zip(*label)
+    # seperate_label = zip(*label)
+    # pad_label = []
+    # seq_len = []
+    # for l in seperate_label:
+    #     temp_label = []
+    #     temp_len = []
+    #     max_len = len(max(l, key=lambda x: len(x)))
+    #     for i in l:
+    #         temp = [PAD] * max_len
+    #         temp[:len(i)] = i
+    #         temp_label.append(temp)
+    #         temp_len.append(len(i))
+    #     temp_label = np.array(temp_label, dtype='int64')
+    #     temp_label.reshape((len(l), -1))
+    #     temp_label = torch.from_numpy(temp_label)
+    #     pad_label.append(temp_label)
+    #     seq_len.append(temp_len)
+
     pad_label = []
     seq_len = []
-    for l in seperate_label:
-        temp_label = []
-        temp_len = []
-        max_len = len(max(l, key=lambda x: len(x)))
-        for i in l:
-            temp = [PAD] * max_len
-            temp[:len(i)] = i
-            temp_label.append(temp)
-            temp_len.append(len(i))
-        temp_label = np.array(temp_label, dtype='int64')
-        temp_label.reshape((len(l), -1))
-        temp_label = torch.from_numpy(temp_label)
-        pad_label.append(temp_label)
-        seq_len.append(temp_len)
-
+    max_len = len(label[0])
+    for i in label:
+        temp = [PAD] * max_len
+        temp[:len(i)] = i
+        pad_label.append(temp)
+        seq_len.append(len(i))
+    pad_label = np.array(pad_label, dtype='int64')
+    pad_label.reshape((len(label), -1))
+    pad_label = torch.from_numpy(pad_label)
     img = torch.stack(img, 0)
     return img, pad_label, seq_len
 
@@ -136,5 +152,7 @@ def get_loader(img_transform=img_transform,
         json_path=
         './data/ai_challenger_caption_train_20170902/caption_train_annotations_20170902.json',
         transform=img_transform)
+
     return data.DataLoader(
-        dset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
+        dset, batch_size=batch_size, shuffle=shuffle,
+        collate_fn=collate_fn), len(vocab_dict)
