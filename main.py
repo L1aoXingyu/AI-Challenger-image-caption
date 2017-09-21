@@ -70,7 +70,7 @@ def main():
         embed_dim=512,
         model_name='resnet',
         total_vocab=vocab_size,
-        hidden_size=256,
+        hidden_size=512,
         num_layers=2)
 
     cap_model = cap_model.cuda()
