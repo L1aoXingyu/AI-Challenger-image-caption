@@ -9,12 +9,14 @@ import pickle
 import argparse
 import os
 
+feature_loader = get_loader(batch_size=32, shuffle=False)
 
-def get_feature(model_name, feature_loader):
+
+def get_feature(model_name):
     if model_name == 'vgg':
         model = models.vgg19(pretrained=True)
 
-        ext_model = nn.Sequential(*list(model.features))
+        ext_model = model.features
         ext_model.add_module('avg_pool', nn.AvgPool2d(7))
 
     elif model_name == 'resnet':
@@ -58,11 +60,9 @@ def get_feature(model_name, feature_loader):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--m", type=str, help='model name')
-    parser.add_argument("--bs", default=32, help="batch size")
     opt = parser.parse_args()
     print(opt)
-    feature_loader = get_loader(batch_size=opt.bs, shuffle=False)
-    get_feature(opt.m, feature_loader=feature_loader)
+    get_feature(opt.m)
 
 
 if __name__ == '__main__':
