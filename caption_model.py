@@ -30,8 +30,8 @@ class encoder(nn.Module):
         self.init_weight()
 
     def init_weight(self):
-        nn.init.normal(self.fc.weight)
-        nn.init.normal(self.fc.bias)
+        nn.init.normal(self.fc.weight, 0, 0.02)
+        nn.init.constant(self.fc.bias, 0)
 
     def forward(self, x):
         x = self.feature(x)
@@ -66,10 +66,10 @@ class decoder(nn.Module):
         x: batch x length
         feature: batch x embed_dim
         """
-        embedding = self.word2vec(x)  # b x l x embed
+        embedding = self.word2vec(x)  # b x le x embed
         combine_input = torch.cat((feature.unsqueeze(1), embedding),
-                                  1)  # b x (1 + l) x embed
-        combine_input = combine_input.permute(1, 0, 2)  # (1 + l) x b x embd
+                                  1)  # b x (1e + l) x embed
+        combine_input = combine_input.permute(1, 0, 2)  # (1e + l) x b x embd
         combine_input = pack_padded_sequence(combine_input, lengths)
         out, _ = self.rnn(combine_input)
         output = self.fc(out[0])

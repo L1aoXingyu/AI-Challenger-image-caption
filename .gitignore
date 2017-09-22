@@ -2,3 +2,5 @@ data
 __pycache__
 .ipynb_checkpoints
 Untitled.ipynb
+*.hd5f
+feature_label.pickle

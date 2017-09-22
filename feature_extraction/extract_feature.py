@@ -1,15 +1,30 @@
-import torch
-import tqdm
-from torchvision import models  # resnet152, densnet161, vgg19, inception_resnet_v2
-import numpy as np
-from torch.autograd import Variable
-from torch import nn
-from extract_dataset import get_loader
-import pickle
 import argparse
 import os
+import pickle
+
+import h5py
+import numpy as np
+import torch
+import tqdm
+from torch import nn
+from torch.autograd import Variable
+from torchvision import \
+    models  # resnet152, densnet161, vgg19, inception_resnet_v2
+
+from extract_dataset import get_loader
 
 feature_loader = get_loader(batch_size=32, shuffle=False)
+
+
+def get_label():
+    img_label = [label for _, label in feature_loader]
+
+    img_label = [j for i in img_label for j in i]
+    if not os.path.exists('./feature_label.pickle'):
+        with open('feature_label.pickle', 'ab+') as f:
+            pickle.dump(img_label, f)
+
+    print('Finish ' + model_name + " label extraction!")
 
 
 def get_feature(model_name):
@@ -35,24 +50,18 @@ def get_feature(model_name):
     ext_model = ext_model.eval()
 
     img_ft = []
-    img_label = []
 
-    for img, label in tqdm.tqdm(feature_loader):
+    for img, _ in tqdm.tqdm(feature_loader):
         img = Variable(img.cuda(), volatile=True)
         feature = ext_model(img)
         feature = feature.view(feature.size(0), feature.size(1))
         feature = feature.cpu().data.numpy()
         feature = np.repeat(feature, 5, 0)
         img_ft.append(feature)
-        img_label.append(label)
 
     img_ft = np.concatenate(img_ft, 0)
-    img_label = [j for i in img_label for j in i]
-    if not os.path.exists('./feature_label.pickle'):
-        with open('feature_label.pickle', 'ab+') as f:
-            pickle.dump(img_label, f)
-    with open(model_name + '_feature.pickle', 'ab+') as f:
-        pickle.dump(img_ft, f)
+    with h5py.File(model_name + ".hd5f", 'w') as h:
+        h.create_dataset(model_name, data=img_ft)
 
     print('Finish ' + model_name + " feature extraction!")
 

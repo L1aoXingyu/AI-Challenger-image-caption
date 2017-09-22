@@ -134,7 +134,7 @@ def collate_fn(batch):
         pad_label.append(temp)
         seq_len.append(len(i))
     pad_label = np.array(pad_label, dtype='int64')
-    pad_label.reshape((len(label), -1))
+    # pad_label.reshape((len(label), -1))
     pad_label = torch.from_numpy(pad_label)
     img = torch.stack(img, 0)
     return img, pad_label, seq_len
