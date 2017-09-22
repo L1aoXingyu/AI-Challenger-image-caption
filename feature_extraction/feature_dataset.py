@@ -100,5 +100,8 @@ def get_dataloader(feature=['vgg', 'resnet', 'densenet'],
     ft_dset = feature_dset(feature)
     vocab = Vocabulary("../word2idx.pickle", "../idx2word.pickle")
     return data.DataLoader(
-        ft_dset, batch_size=batch_size, shuffle=shuffle,
-        collate_fn=collate_fn), len(vocab)
+        ft_dset,
+        batch_size=batch_size,
+        shuffle=shuffle,
+        collate_fn=collate_fn,
+        num_workers=4), len(vocab)

@@ -47,7 +47,7 @@ def get_feature(model_name):
     # add inception-resnet-v2
 
     ext_model = ext_model.cuda()
-    ext_model = ext_model.eval()
+    ext_model = ext_model.train()
 
     img_ft = []
 

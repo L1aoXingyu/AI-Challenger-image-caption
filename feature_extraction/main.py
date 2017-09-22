@@ -64,10 +64,11 @@ def get_performance(out, label):
 
 
 def main():
-    dataloader, vocab_size = get_dataloader(feature=['vgg', 'densenet'], batch_size=64)
+    dataloader, vocab_size = get_dataloader(
+        feature=["resnet", "vgg", "densenet"], batch_size=64, shuffle=True)
 
     ft_model = feature_model(
-        in_feature=2208+512,
+        in_feature=2048 + 512 + 2208,  # 2208, 512, 2048
         vocab_size=vocab_size,
         embed_dim=512,
         hidden_size=512,
@@ -84,7 +85,7 @@ def main():
         dataloader=dataloader,
         criterion=get_performance,
         optimizer=optimizer,
-        print_step=100)
+        print_step=1)
 
 
 if __name__ == '__main__':
