@@ -74,9 +74,13 @@ class feature_model(nn.Module):
         pred_arr = []
         for i in range(20):
             out, hidden = self.rnn(out, hidden)
+            out = out.squeeze(0)
             pred_char = self.classifer(out)
             _, pred_label = pred_char.max(1)
-            if pred_label == EOS:
+            pred_arr.append(pred_label.data[0])
+            if pred_label.data[0] == EOS:
                 break
-            pred_arr.append(pred_label)
+            out = self.word2vec(pred_label)
+            out = out.unsqueeze(0)
+            pred_arr.append(pred_label.data[0])
         return pred_arr
