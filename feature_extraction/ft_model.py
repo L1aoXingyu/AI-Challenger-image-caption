@@ -1,9 +1,10 @@
 import torch
 from torch import nn
 from torch.nn.utils.rnn import pack_padded_sequence
+from torch.autograd import Variable
 
 PAD = 0
-
+EOS = 3
 
 class feature_model(nn.Module):
     """
@@ -19,8 +20,10 @@ class feature_model(nn.Module):
                  dropout=0.5):
         super(feature_model, self).__init__()
 
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
         self.project = nn.Sequential(nn.Linear(in_feature, embed_dim))
-        # nn.BatchNorm1d(embed_dim, momentum=0.01))
+        nn.BatchNorm1d(embed_dim, momentum=0.01))
         self.word2vec = nn.Embedding(vocab_size, embed_dim, padding_idx=PAD)
         self.rnn = nn.LSTM(
             input_size=embed_dim,
@@ -52,3 +55,28 @@ class feature_model(nn.Module):
         out, _ = self.rnn(combine_input)
         output = self.classifer(out[0])
         return output
+
+    def get_hidden(self, bs):
+        h0 = Variable(torch.zeros(self.num_layers, bs, self.hidden_size)).cuda()
+        c0 = Variable(torch.zeros(self.num_layers, bs, self.hidden_size)).cuda()
+        return (h0, c0)
+
+    def sample(self, ft):
+        """
+        ft: image feature map to generate caption
+        this is only supported one image
+        """
+        # to do: support batch process
+
+        proj_ft = self.project(ft) # 1 x ft_dimenstion
+        out = proj_ft.unsqueeze(0) # 1 x 1 x ft_dimension
+        hidden = self.get_hidden(1) 
+        pred_arr = []
+        for i in range(20):
+            out, hidden = self.rnn(out, hidden)
+            pred_char = self.classifer(out)
+            _, pred_label = pred_char.max(1)
+            if pred_label == EOS:
+                break
+            pred_arr.append(pred_label)
+        return pred_arr

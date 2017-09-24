@@ -106,6 +106,3 @@ class CaptionModel(nn.Module):
         feature = self.encoder(img)
         out = self.decoder(seq, feature, lengths)
         return out
-
-    def sample(self, x):
-        pass
