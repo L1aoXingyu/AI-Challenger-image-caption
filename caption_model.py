@@ -4,8 +4,6 @@ from torch.autograd import Variable
 from torch.nn.utils.rnn import pack_padded_sequence
 from torchvision import models
 
-PAD = 0
-
 
 class encoder(nn.Module):
     """
@@ -46,14 +44,14 @@ class decoder(nn.Module):
     define seq2seq model to get the text from convolution encoder hidden state
     """
 
-    def __init__(self, total_vocab, embed_dim, hidden_size, num_layers,
-                 dropout):
+    def __init__(self, total_vocab, n_class, embed_dim, hidden_size,
+                 num_layers, dropout):
         super(decoder, self).__init__()
         self.num_layers = num_layers
-        self.word2vec = nn.Embedding(total_vocab, embed_dim, padding_idx=PAD)
+        self.word2vec = nn.Embedding(total_vocab, embed_dim)
         self.rnn = nn.GRU(
             embed_dim, hidden_size, num_layers=num_layers, dropout=dropout)
-        self.fc = nn.Linear(hidden_size, total_vocab)
+        self.fc = nn.Linear(hidden_size, n_class)
         self.init_weight()
 
     def init_weight(self):
@@ -85,6 +83,7 @@ class CaptionModel(nn.Module):
                  embed_dim,
                  model_name,
                  total_vocab,
+                 n_class,
                  hidden_size,
                  num_layers,
                  encoder=encoder,
@@ -92,8 +91,8 @@ class CaptionModel(nn.Module):
                  dropout=0.5):
         super(CaptionModel, self).__init__()
         self.encoder = encoder(embed_dim, model_name)
-        self.decoder = decoder(total_vocab, embed_dim, hidden_size, num_layers,
-                               dropout)
+        self.decoder = decoder(total_vocab, n_class, embed_dim, hidden_size,
+                               num_layers, dropout)
 
     def get_train_param(self):
         for param in self.encoder.feature:

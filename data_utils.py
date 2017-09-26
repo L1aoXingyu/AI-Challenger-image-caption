@@ -9,15 +9,9 @@ from PIL import Image
 from torch.utils import data
 from torchvision import transforms
 
-PAD = 0
-UNK = 1
-BOS = 2
-EOS = 3
-
-PAD_WORD = "<blank>"
 UNK_WORD = "<unkown>"
-BOS_WORD = "<s>"
-EOS_WORD = "</s>"
+EOS_WORD = "<s>"
+PAD_WORD = "<blank>"
 
 
 class Vocabulary(object):
@@ -30,8 +24,13 @@ class Vocabulary(object):
 
         self.idx = len(self.word2idx)
 
-    def __len__(self):
+    @property
+    def total_word(self):
         return len(self.word2idx) + 1
+
+    @property
+    def n_class(self):
+        return len(self.word2idx) - 1
 
     def add_word(self, word):
         if word not in self.word2idx:
@@ -66,9 +65,11 @@ class Vocabulary(object):
         return ''.join(text)
 
 
+vocab = Vocabulary("./word2idx.pickle", "./idx2word.pickle")
+
+
 class MyDataset(data.Dataset):
-    def __init__(self, vocab_dict, img_path, json_path, transform):
-        self.vocab_dict = vocab_dict
+    def __init__(self, img_path, json_path, transform):
         with open(json_path, 'r') as f:
             self.caption = json.load(f)
 
@@ -84,9 +85,9 @@ class MyDataset(data.Dataset):
         # cap.sort(key=lambda x: len(x), reverse=True)
         # new_cap = []
         # for each in cap:
-        #     temp = [BOS] + self.vocab_dict.text_to_arr(each) + [EOS]
+        #     temp = self.vocab_dict.text_to_arr(each) + [EOS]
         #     new_cap.append(temp)
-        cap = [BOS] + self.vocab_dict.text_to_arr(cap[0]) + [EOS]
+        cap = vocab.text_to_arr(cap[0]) + [vocab.word2idx[EOS_WORD]]
         return img, cap
 
     def __len__(self):
@@ -129,7 +130,7 @@ def collate_fn(batch):
     seq_len = []
     max_len = len(label[0])
     for i in label:
-        temp = [PAD] * max_len
+        temp = [vocab.word2idx[PAD_WORD]] * max_len
         temp[:len(i)] = i
         pad_label.append(temp)
         seq_len.append(len(i))
@@ -144,9 +145,7 @@ def get_loader(img_transform=img_transform,
                batch_size=32,
                shuffle=True,
                collate_fn=collate_fn):
-    vocab_dict = Vocabulary('./word2idx.pickle', './idx2word.pickle')
     dset = MyDataset(
-        vocab_dict,
         img_path=
         './data/ai_challenger_caption_train_20170902/caption_train_images_20170902',
         json_path=
@@ -155,4 +154,4 @@ def get_loader(img_transform=img_transform,
 
     return data.DataLoader(
         dset, batch_size=batch_size, shuffle=shuffle,
-        collate_fn=collate_fn), len(vocab_dict)
+        collate_fn=collate_fn), vocab.total_word, vocab.n_class

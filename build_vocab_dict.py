@@ -2,26 +2,14 @@ __author__ = 'sherlock'
 import json
 import pickle
 
-PAD = 0
-UNK = 1
-BOS = 2
-EOS = 3
-
+EOS_WORD = "<s>"
 PAD_WORD = "<blank>"
-UNK_WORD = "<unkown>"
-BOS_WORD = "<s>"
-EOS_WORD = "</s>"
 
 
 def build_vocab(json_file, threshold=5):
     word2idx = {}
-    word2idx[PAD_WORD] = PAD
-    word2idx[UNK_WORD] = UNK
-    word2idx[BOS_WORD] = BOS
-    word2idx[EOS_WORD] = EOS
-    idx2word = dict(enumerate(word2idx))
-    idx = 4
-
+    idx = 0
+    idx2word = {}
     with open(json_file) as f:
         cap = json.load(f)
     cap_list = [
@@ -44,6 +32,11 @@ def build_vocab(json_file, threshold=5):
         word2idx[word] = idx
         idx2word[idx] = word
         idx += 1
+    word2idx[EOS_WORD] = idx
+    idx2word[idx] = EOS_WORD
+    idx += 1
+    word2idx[PAD_WORD] = idx
+    idx2word[idx] = PAD_WORD
 
     with open('word2idx.pickle', 'ab+') as f:
         pickle.dump(word2idx, f)

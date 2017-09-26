@@ -64,12 +64,13 @@ def get_performance(out, label):
 
 
 def main():
-    dataloader, vocab_size = get_loader(batch_size=2)
+    dataloader, vocab_size, n_class = get_loader(batch_size=2)
 
     cap_model = CaptionModel(
         embed_dim=512,
         model_name='resnet',
         total_vocab=vocab_size,
+        n_class=n_class,
         hidden_size=512,
         num_layers=2)
 
