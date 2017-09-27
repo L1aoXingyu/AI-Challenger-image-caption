@@ -51,7 +51,7 @@ def train(epochs, save_point, model, dataloader, criterion, optimizer,
         print('loss: {:.5f}, time: {:.1f} s'.format(train_loss,
                                                     time.time() - since))
 
-        if (e + 1) % save_point:
+        if (e + 1) % save_point == 0:
             if not os.path.exists('./checkpoints'):
                 os.mkdir('./checkpoints')
             torch.save(model.state_dict(),
