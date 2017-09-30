@@ -4,6 +4,7 @@ import pickle
 
 EOS_WORD = "<s>"
 PAD_WORD = "<blank>"
+UNK_WORD = "<unkown>"
 
 
 def build_vocab(json_file, threshold=5):
@@ -34,6 +35,9 @@ def build_vocab(json_file, threshold=5):
         idx += 1
     word2idx[EOS_WORD] = idx
     idx2word[idx] = EOS_WORD
+    idx += 1
+    word2idx[UNK_WORD] = idx
+    idx2word[idx] = UNK_WORD
     idx += 1
     word2idx[PAD_WORD] = idx
     idx2word[idx] = PAD_WORD

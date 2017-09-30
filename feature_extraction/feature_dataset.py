@@ -5,7 +5,9 @@ import numpy as np
 import torch
 from torch.utils import data
 
-PAD = 0
+UNK_WORD = "<unkown>"
+EOS_WORD = "<s>"
+PAD_WORD = "<blank>"
 
 
 class Vocabulary(object):
@@ -18,8 +20,13 @@ class Vocabulary(object):
 
         self.idx = len(self.word2idx)
 
-    def __len__(self):
-        return len(self.word2idx) + 1
+    @property
+    def total_word(self):
+        return len(self.word2idx)
+
+    @property
+    def n_class(self):
+        return len(self.word2idx) - 1
 
     def add_word(self, word):
         if word not in self.word2idx:
@@ -31,7 +38,7 @@ class Vocabulary(object):
         if word in self.word2idx:
             return self.word2idx[word]
         else:
-            return len(self.word2idx)
+            return self.word2idx[UNK_WORD]
 
     def int_to_word(self, index):
         if index == len(self.word2idx):
@@ -76,6 +83,9 @@ class feature_dset(data.Dataset):
         return len(self.label)
 
 
+vocab = Vocabulary("../word2idx.pickle", "../idx2word.pickle")
+
+
 def collate_fn(batch):
     batch.sort(key=lambda x: len(x[1]), reverse=True)
     ft, label = zip(*batch)
@@ -85,7 +95,7 @@ def collate_fn(batch):
     seq_len = []
     max_len = len(label[0])
     for i in label:
-        temp = [PAD] * max_len
+        temp = [vocab.word2idx[PAD_WORD]] * max_len
         temp[:len(i)] = i
         pad_label.append(temp)
         seq_len.append(len(i))
@@ -104,4 +114,4 @@ def get_dataloader(feature=['vgg', 'resnet', 'densenet'],
         batch_size=batch_size,
         shuffle=shuffle,
         collate_fn=collate_fn,
-        num_workers=4), len(vocab)
+        num_workers=4)

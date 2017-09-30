@@ -8,8 +8,8 @@ from torch import nn, optim
 from torch.autograd import Variable
 from torch.nn.utils.rnn import pack_padded_sequence
 
+from feature_dataset import Vocabulary, get_dataloader
 from ft_model import feature_model
-from feature_dataset import get_dataloader
 
 
 def train_epoch(model, dataloader, criterion, optimizer, print_step):
@@ -49,7 +49,7 @@ def train(epochs, save_point, model, dataloader, criterion, optimizer,
                                  print_step)
         print('loss: {:.5f}, time: {:.1f} s'.format(train_loss,
                                                     time.time() - since))
-
+        print()
         if (e + 1) % save_point == 0:
             if not os.path.exists('./checkpoints'):
                 os.mkdir('./checkpoints')
@@ -64,12 +64,14 @@ def get_performance(out, label):
 
 
 def main():
-    dataloader, vocab_size = get_dataloader(
-        feature=["resnet", "vgg", "densenet"], batch_size=64, shuffle=True)
+    dataloader = get_dataloader(
+        feature=["resnet", "vgg", "densenet"], batch_size=32, shuffle=True)
 
+    vocab = Vocabulary("../word2idx.pickle", "../idx2word.pickle")
     ft_model = feature_model(
         in_feature=2048 + 512 + 2208,  # 2208, 512, 2048
-        vocab_size=vocab_size,
+        vocab_size=vocab.total_word,
+        n_class=vocab.n_class,
         embed_dim=512,
         hidden_size=512,
         num_layers=2)

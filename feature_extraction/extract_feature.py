@@ -13,7 +13,7 @@ from torchvision import \
 
 from extract_dataset import get_loader
 
-feature_loader = get_loader(batch_size=32, shuffle=False)
+feature_loader = get_loader(batch_size=256, shuffle=False)
 
 
 def get_label():
@@ -24,7 +24,7 @@ def get_label():
         with open('feature_label.pickle', 'ab+') as f:
             pickle.dump(img_label, f)
 
-    print('Finish ' + model_name + " label extraction!")
+    print("Finish label extraction!")
 
 
 def get_feature(model_name):
@@ -71,7 +71,8 @@ def main():
     parser.add_argument("--m", type=str, help='model name')
     opt = parser.parse_args()
     print(opt)
-    get_feature(opt.m)
+    get_label()
+    # get_feature(opt.m)
 
 
 if __name__ == '__main__':

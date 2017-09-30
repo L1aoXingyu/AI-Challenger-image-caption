@@ -26,7 +26,7 @@ class Vocabulary(object):
 
     @property
     def total_word(self):
-        return len(self.word2idx) + 1
+        return len(self.word2idx)
 
     @property
     def n_class(self):

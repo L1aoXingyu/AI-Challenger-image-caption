@@ -9,15 +9,9 @@ from PIL import Image
 from torch.utils import data
 from torchvision import transforms
 
-PAD = 0
-UNK = 1
-BOS = 2
-EOS = 3
-
 PAD_WORD = "<blank>"
 UNK_WORD = "<unkown>"
-BOS_WORD = "<s>"
-EOS_WORD = "</s>"
+EOS_WORD = "<s>"
 
 
 class Vocabulary(object):
@@ -30,8 +24,13 @@ class Vocabulary(object):
 
         self.idx = len(self.word2idx)
 
-    def __len__(self):
-        return len(self.word2idx) + 1
+    @property
+    def total_word(self):
+        return len(self.word2idx)
+
+    @property
+    def n_class(self):
+        return len(self.word2idx) - 1
 
     def add_word(self, word):
         if word not in self.word2idx:
@@ -66,6 +65,9 @@ class Vocabulary(object):
         return ''.join(text)
 
 
+vocab = Vocabulary("../word2idx.pickle", "../idx2word.pickle")
+
+
 class MyDataset(data.Dataset):
     def __init__(self, vocab_dict, img_path, json_path, transform):
         self.vocab_dict = vocab_dict
@@ -83,7 +85,9 @@ class MyDataset(data.Dataset):
         cap = self.caption[index]['caption']
         new_cap = []
         for each in cap:
-            temp = [BOS] + self.vocab_dict.text_to_arr(each) + [EOS]
+            temp = self.vocab_dict.text_to_arr(each) + [
+                vocab.word_to_int(EOS_WORD)
+            ]
             new_cap.append(temp)
         return img, new_cap
 
