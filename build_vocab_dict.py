@@ -4,7 +4,7 @@ import pickle
 
 EOS_WORD = "<s>"
 PAD_WORD = "<blank>"
-UNK_WORD = "<unkown>"
+UNK_WORD = "<unknown>"
 
 
 def build_vocab(json_file, threshold=5):
@@ -53,7 +53,7 @@ def build_vocab(json_file, threshold=5):
 
 def main():
     build_vocab(
-        './data/ai_challenger_caption_train_20170902/caption_train_annotations_20170902.json'
+        '/home/node/dhn/Image_caption/image-caption/data/ai_challenger_caption_train_20170902/caption_train_annotations_20170902.json'
     )
 
 

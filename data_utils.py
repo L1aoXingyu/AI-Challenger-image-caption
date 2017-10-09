@@ -9,7 +9,7 @@ from PIL import Image
 from torch.utils import data
 from torchvision import transforms
 
-UNK_WORD = "<unkown>"
+UNK_WORD = "<unknown>"
 EOS_WORD = "<s>"
 PAD_WORD = "<blank>"
 
@@ -42,12 +42,10 @@ class Vocabulary(object):
         if word in self.word2idx:
             return self.word2idx[word]
         else:
-            return len(self.word2idx)
+            return self.word2idx[UNK_WORD]
 
     def int_to_word(self, index):
-        if index == len(self.word2idx):
-            return UNK_WORD
-        elif index < len(self.word2idx):
+        if index < len(self.word2idx):
             return self.idx2word[index]
         else:
             raise Exception('Unknown index!')

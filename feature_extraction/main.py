@@ -65,11 +65,11 @@ def get_performance(out, label):
 
 def main():
     dataloader = get_dataloader(
-        feature=["resnet", "vgg", "densenet"], batch_size=32, shuffle=True)
+        feature=["resnet", "vgg", "densenet"], batch_size=512, shuffle=True)
 
     vocab = Vocabulary("../word2idx.pickle", "../idx2word.pickle")
     ft_model = feature_model(
-        in_feature=2048 + 512 + 2208,  # 2208, 512, 2048
+        in_feature=2048+512+2208,  # 2048, 512, 2208
         vocab_size=vocab.total_word,
         n_class=vocab.n_class,
         embed_dim=512,
@@ -81,13 +81,13 @@ def main():
     optimizer = optim.Adam(ft_model.parameters())
 
     train(
-        epochs=100,
+        epochs=1000,
         save_point=10,
         model=ft_model,
         dataloader=dataloader,
         criterion=get_performance,
         optimizer=optimizer,
-        print_step=1)
+        print_step=1000)
 
 
 if __name__ == '__main__':

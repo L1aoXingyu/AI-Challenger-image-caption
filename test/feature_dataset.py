@@ -60,53 +60,36 @@ class Vocabulary(object):
 
 
 class feature_dset(data.Dataset):
-    def __init__(self, feature=['vgg', 'resnet', 'densenet']):
+    def __init__(self, feature=['resnet', 'vgg', 'densenet']):
         self.feature = feature
-        with open('feature_label.pickle', 'rb') as f:
-            self.label = pickle.load(f)
+        with open("./img_name.pickle", "rb") as f:
+            self.name = pickle.load(f)
 
     def __getitem__(self, index):
         idx_feature = []
         for each in self.feature:
-            file = each + ".hd5f"
+            file = each + "_test.hd5f"
             with h5py.File(file, 'r') as f:
                 temp_ft = f[each][index]
             idx_feature.append(temp_ft)
         idx_feature = np.concatenate(idx_feature)
         idx_feature = torch.from_numpy(idx_feature)
 
-        return idx_feature, self.label[index]
+        return idx_feature, self.name[index]
 
     def __len__(self):
-        return len(self.label)
-
-
-vocab = Vocabulary("../word2idx.pickle", "../idx2word.pickle")
+        return len(self.name)
 
 
 def collate_fn(batch):
-    batch.sort(key=lambda x: len(x[1]), reverse=True)
-    ft, label = zip(*batch)
-
-    # pad the longest label
-    pad_label = []
-    seq_len = []
-    max_len = len(label[0])
-    for i in label:
-        temp = [vocab.word2idx[PAD_WORD]] * max_len
-        temp[:len(i)] = i
-        pad_label.append(temp)
-        seq_len.append(len(i))
-    pad_label = np.array(pad_label, dtype='int64')
-    pad_label = torch.from_numpy(pad_label)
-    return torch.stack(ft, 0), pad_label, seq_len
+    ft, name = zip(*batch)
+    return torch.stack(ft, 0), name
 
 
 def get_dataloader(feature=['vgg', 'resnet', 'densenet'],
                    batch_size=32,
-                   shuffle=True):
+                   shuffle=False):
     ft_dset = feature_dset(feature)
-    vocab = Vocabulary("../word2idx.pickle", "../idx2word.pickle")
     return data.DataLoader(
         ft_dset,
         batch_size=batch_size,

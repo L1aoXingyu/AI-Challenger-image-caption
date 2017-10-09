@@ -10,7 +10,7 @@ from torch.utils import data
 from torchvision import transforms
 
 PAD_WORD = "<blank>"
-UNK_WORD = "<unkown>"
+UNK_WORD = "<unknown>"
 EOS_WORD = "<s>"
 
 
@@ -42,12 +42,10 @@ class Vocabulary(object):
         if word in self.word2idx:
             return self.word2idx[word]
         else:
-            return len(self.word2idx)
+            return self.word2idx[UNK_WORD]
 
     def int_to_word(self, index):
-        if index == len(self.word2idx):
-            return UNK_WORD
-        elif index < len(self.word2idx):
+        if index < len(self.word2idx):
             return self.idx2word[index]
         else:
             raise Exception('Unknown index!')
@@ -119,9 +117,9 @@ def get_loader(img_transform=img_transform,
     dset = MyDataset(
         vocab_dict,
         img_path=
-        '../data/ai_challenger_caption_train_20170902/caption_train_images_20170902',
+        '/home/node/dhn/Image_caption/image-caption/data/ai_challenger_caption_train_20170902/caption_train_images_20170902',
         json_path=
-        '../data/ai_challenger_caption_train_20170902/caption_train_annotations_20170902.json',
+        '/home/node/dhn/Image_caption/image-caption/data/ai_challenger_caption_train_20170902/caption_train_annotations_20170902.json',
         transform=img_transform)
 
     return data.DataLoader(

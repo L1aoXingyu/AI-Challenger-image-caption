@@ -13,17 +13,15 @@ from torchvision import \
 
 from extract_dataset import get_loader
 
-feature_loader = get_loader(batch_size=1024, shuffle=False)
+feature_loader = get_loader(batch_size=32)
 
 
-def get_label():
-    img_label = [label for _, label in feature_loader]
+def get_image_name():
+    image_name = [i for _, img_name in feature_loader for i in img_name]
 
-    img_label = [j for i in img_label for j in i]
-    if not os.path.exists('./feature_label.pickle'):
-        with open('feature_label.pickle', 'ab+') as f:
-            pickle.dump(img_label, f)
-
+    if not os.path.exists('./img_name.pickle'):
+        with open('img_name.pickle', 'ab+') as f:
+            pickle.dump(image_name, f)
     print("Finish label extraction!")
 
 
@@ -55,12 +53,11 @@ def get_feature(model_name):
         img = Variable(img.cuda(), volatile=True)
         feature = ext_model(img)
         feature = feature.view(feature.size(0), feature.size(1))
-        feature = feature.cpu().data.numpy()
-        feature = np.repeat(feature, 5, 0)
         img_ft.append(feature)
 
-    img_ft = np.concatenate(img_ft, 0)
-    with h5py.File(model_name + ".hd5f", 'w') as h:
+    img_ft = torch.cat(img_ft)
+    img_ft = img_ft.data.cpu().numpy()
+    with h5py.File(model_name + "_test.hd5f", 'w') as h:
         h.create_dataset(model_name, data=img_ft)
 
     print('Finish ' + model_name + " feature extraction!")
@@ -71,8 +68,8 @@ def main():
     parser.add_argument("--m", type=str, help='model name')
     opt = parser.parse_args()
     print(opt)
-    get_label()
-    # get_feature(opt.m)
+    # get_image_name()
+    get_feature(opt.m)
 
 
 if __name__ == '__main__':
